@@ -1,0 +1,11 @@
+package gen
+{{if or .Methods .Events }}
+const (
+{{- range $key, $method := .Methods }}
+	Method{{ $key | title }} = "{{ $key }}"
+{{- end }}
+{{- range $key, $event := .Events }}
+	Event{{ $key | title }} = "{{ $key }}"
+{{- end }}
+)
+{{ end }}

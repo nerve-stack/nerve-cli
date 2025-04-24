@@ -1,0 +1,123 @@
+version: "1.0.0"
+info:
+  name: "Chat"
+  version: "0.0.1"
+schemas:
+  types:
+    UUID:
+      type: string
+      format: uuid
+    DateTime:
+      type: string
+      format: date-time
+  entities:
+    User:
+      type: object
+      description: "A user in the chat system"
+      properties:
+        id:
+          $ref: "#/schemas/types/UUID"
+        username:
+          type: string
+        name:
+          type: string
+        avatar_url:
+          type: string
+      required:
+        - id
+        - username
+        - name
+    Message:
+      type: object
+      description: "A message sent in a chat"
+      properties:
+        id:
+          $ref: "#/schemas/types/UUID"
+        sender:
+          $ref: "#/schemas/entities/User"
+        created_at:
+          $ref: "#/schemas/types/DateTime"
+        updated_at:
+          $ref: "#/schemas/types/DateTime"
+        reply_to_id:
+          $ref: "#/schemas/types/UUID"
+        forwarded_message_id:
+          $ref: "#/schemas/types/UUID"
+        content:
+          type: string
+      required:
+        - id
+        - sender
+        - created_at
+    Chat:
+      type: object
+      description: "A chat (direct or group)"
+      properties:
+        id:
+          $ref: "#/schemas/types/UUID"
+        type:
+          type: string
+          enum: [group, direct]
+        muted:
+          type: boolean
+        pinned:
+          type: boolean
+        last_message:
+          $ref: "#/schemas/entities/Message"
+        name:
+          type: string
+        avatar_url:
+          type: string
+      required:
+        - id
+        - type
+        - muted
+        - pinned
+        - name
+  errors:
+    UserNotFound:
+      code: -32009
+      description: "Returned when the target user does not exist"
+      data:
+        type: object
+        properties:
+          user_id:
+            $ref: "#/schemas/types/UUID"
+        required:
+          - user_id
+methods:
+  sendMessage:
+    description: "Send a message to a user or chat"
+    params:
+      type: object
+      properties:
+        user_id:
+          $ref: "#/schemas/types/UUID"
+        reply_to_id:
+          $ref: "#/schemas/types/UUID"
+        content:
+          type: string
+      required:
+        - user_id
+    result:
+      $ref: "#/schemas/entities/Message"
+    errors:
+      - $ref: "#/schemas/errors/UserNotFound"
+  getChats:
+    description: "Get a list of chats for the current user"
+    result:
+      type: array
+      items:
+        $ref: "#/schemas/entities/Chat"
+  searchUsers:
+    description: "Search users by query string"
+    params:
+      type: string
+    result:
+      type: array
+      items:
+        $ref: "#/schemas/entities/User"
+events:
+  newMessage:
+    description: "Notification sent when a new message arrives"
+    $ref: "#/schemas/entities/Message"

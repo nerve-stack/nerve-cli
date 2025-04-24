@@ -1,0 +1,209 @@
+version: "1.0.0"
+info:
+  name: "Chat"
+  version: "0.0.1"
+methods:
+  sendMessage:
+    description: "Send a message to a user or chat"
+    params:
+      type: object
+      properties:
+        user_id:
+          type: string
+          format: uuid
+        reply_to_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+      required:
+        - user_id
+    result:
+      type: object
+      description: "A message sent in a chat"
+      properties:
+        id:
+          type: string
+          format: uuid
+        sender:
+          type: object
+          description: "A user in the chat system"
+          properties:
+            id:
+              type: string
+              format: uuid
+            username:
+              type: string
+            name:
+              type: string
+            avatar_url:
+              type: string
+          required:
+            - id
+            - username
+            - name
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        reply_to_id:
+          type: string
+          format: uuid
+        forwarded_message_id:
+          type: string
+          format: uuid
+        content:
+          type: string
+      required:
+        - id
+        - sender
+        - created_at
+    errors:
+      - code: -32009
+        description: "Returned when the target user does not exist"
+        data:
+          type: object
+          properties:
+            user_id:
+              type: string
+              format: uuid
+          required:
+            - user_id
+  getChats:
+    description: "Get a list of chats for the current user"
+    result:
+      type: array
+      items:
+        type: object
+        description: "A chat (direct or group)"
+        properties:
+          id:
+            type: string
+            format: uuid
+          type:
+            type: string
+            enum: [group, direct]
+          muted:
+            type: boolean
+          pinned:
+            type: boolean
+          last_message:
+            type: object
+            description: "A message sent in a chat"
+            properties:
+              id:
+                type: string
+                format: uuid
+              sender:
+                type: object
+                description: "A user in the chat system"
+                properties:
+                  id:
+                    type: string
+                    format: uuid
+                  username:
+                    type: string
+                  name:
+                    type: string
+                  avatar_url:
+                    type: string
+                required:
+                  - id
+                  - username
+                  - name
+              created_at:
+                type: string
+                format: date-time
+              updated_at:
+                type: string
+                format: date-time
+              reply_to_id:
+                type: string
+                format: uuid
+              forwarded_message_id:
+                type: string
+                format: uuid
+              content:
+                type: string
+            required:
+              - id
+              - sender
+              - created_at
+          name:
+            type: string
+          avatar_url:
+            type: string
+        required:
+          - id
+          - type
+          - muted
+          - pinned
+          - name
+  searchUsers:
+    description: "Search users by query string"
+    params:
+      type: string
+    result:
+      type: array
+      items:
+        type: object
+        description: "A user in the chat system"
+        properties:
+          id:
+            type: string
+            format: uuid
+          username:
+            type: string
+          name:
+            type: string
+          avatar_url:
+            type: string
+        required:
+          - id
+          - username
+          - name
+events:
+  newMessage:
+    type: object
+    description: "Notification sent when a new message arrives"
+    properties:
+      id:
+        type: string
+        format: uuid
+      sender:
+        type: object
+        description: "A user in the chat system"
+        properties:
+          id:
+            type: string
+            format: uuid
+          username:
+            type: string
+          name:
+            type: string
+          avatar_url:
+            type: string
+        required:
+          - id
+          - username
+          - name
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      reply_to_id:
+        type: string
+        format: uuid
+      forwarded_message_id:
+        type: string
+        format: uuid
+      content:
+        type: string
+    required:
+      - id
+      - sender
+      - created_at
