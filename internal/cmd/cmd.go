@@ -7,7 +7,6 @@ import (
 	"io"
 	"os/exec"
 
-	"github.com/nerve-stack/nerve-cli/internal/schema"
 	"github.com/spf13/cobra"
 )
 
@@ -49,39 +48,4 @@ func versionCmd() *cobra.Command {
 			return err
 		},
 	}
-}
-
-func codegenCmd() *cobra.Command {
-	command := &cobra.Command{
-		Use:   "codegen",
-		Short: "Generate code for specified language",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			language, _ := cmd.Flags().GetString("language")
-			target, _ := cmd.Flags().GetString("target")
-			schemaPath, _ := cmd.Flags().GetString("schema")
-
-			spec, err := schema.Parse(schemaPath)
-			if err != nil {
-				return err
-			}
-
-			// Print out the parsed schema and options (just for illustration)
-			fmt.Printf("Generating %s code for %s with schema: %s\n", language, target, schemaPath)
-			fmt.Printf("Parsed Spec: %+v\n", spec)
-
-			return nil
-		},
-	}
-
-	// Add flags inside this function
-	command.Flags().StringP("language", "l", "", "Programming language for code generation (ts, go, rust)")
-	command.Flags().StringP("target", "t", "", "Target code generation (client, server)")
-	command.Flags().StringP("schema", "s", "", "Path to the schema file (JSON or YAML)")
-
-	// Mark flags as required
-	command.MarkFlagRequired("language")
-	command.MarkFlagRequired("target")
-	command.MarkFlagRequired("schema")
-
-	return command
 }
