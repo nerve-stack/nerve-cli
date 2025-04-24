@@ -1,7 +1,7 @@
 version: "1.0.0"
 info:
   name: "Chat"
-  version: "0.0.1"
+  version: "0.0.2"
 schemas:
   User:
     type: object
@@ -41,6 +41,10 @@ schemas:
         format: uuid
       content:
         type: string
+      attachments:
+        type: array
+        items:
+          $ref: "#/schemas/Attachment"
     required:
       - id
       - sender
@@ -70,6 +74,40 @@ schemas:
       - muted
       - pinned
       - name
+  Group:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      name:
+        type: string
+      members:
+        type: array
+        items:
+          $ref: "#/schemas/User"
+      created_at:
+        type: string
+        format: date-time
+    required:
+      - id
+      - name
+      - members
+  Attachment:
+    type: object
+    properties:
+      id:
+        type: string
+        format: uuid
+      url:
+        type: string
+      type:
+        type: string
+        enum: [image, file, video]
+    required:
+      - id
+      - url
+      - type
 errors:
   UserNotFound:
     code: -32009
@@ -81,6 +119,25 @@ errors:
           format: uuid
       required:
         - user_id
+  ChatNotFound:
+    code: -32010
+    data:
+      type: object
+      properties:
+        chat_id:
+          type: string
+          format: uuid
+      required:
+        - chat_id
+  MessageTooLong:
+    code: -32011
+    data:
+      type: object
+      properties:
+        max_length:
+          type: integer
+      required:
+        - max_length
 methods:
   sendMessage:
     params:
@@ -100,6 +157,12 @@ methods:
       $ref: "#/schemas/Message"
     errors:
       - UserNotFound
+      - MessageTooLong
+  getChats:
+    result:
+      type: array
+      items:
+        $ref: "#/schemas/Chat"
   searchUsers:
     params:
       type: string
@@ -107,11 +170,51 @@ methods:
       type: array
       items:
         $ref: "#/schemas/User"
-  getChats:
+  createGroup:
+    params:
+      $ref: "#/schemas/Group"
+  getMessages:
+    params:
+      type: object
+      properties:
+        chat_id:
+          type: string
+          format: uuid
+        limit:
+          type: integer
+        before_id:
+          type: string
+          format: uuid
+      required:
+        - chat_id
     result:
       type: array
       items:
-        $ref: "#/schemas/Chat"
+        $ref: "#/schemas/Message"
+    errors:
+      - ChatNotFound
+  uploadAttachment:
+    params:
+      type: object
+      properties:
+        chat_id:
+          type: string
+          format: uuid
+        file_name:
+          type: string
+        file_content:
+          type: string
+          format: binary
+      required:
+        - chat_id
+        - file_name
+        - file_content
+    result:
+      $ref: "#/schemas/Attachment"
+    errors:
+      - ChatNotFound
 events:
   newMessage:
     $ref: "#/schemas/Message"
+  userJoinedGroup:
+    $ref: "#/schemas/Group"

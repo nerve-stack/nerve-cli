@@ -16,9 +16,9 @@ test:
 
 .PHONY: run
 run:
-	go run ./cmd/nerve codegen server ./examples/chat-no-refs.yml -l go
+	go run ./cmd/nerve codegen server ./examples/example.yml -l go
 
 .PHONY: build
 build:
-	go build -o .out/nerve ./cmd/nerve
+	go build -o ~/.cache/bin/nerve ./cmd/nerve
 

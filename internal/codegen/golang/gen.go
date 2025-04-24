@@ -1,33 +1,48 @@
 package golang
 
 import (
-	"io"
+	"bytes"
 	"text/template"
 
-	"github.com/nerve-stack/nerve-cli/internal/codegen/sdk"
-	"github.com/nerve-stack/nerve-cli/internal/schema"
+	"github.com/nerve-stack/nerve-cli/pkg/cases"
 )
 
-//	type tmplCtx struct {
-//		Package string
-//		Version string
-//	}
+var funcs = template.FuncMap{
+	"camel": cases.ToCamelCase,
+}
 
-func GenServer(w io.Writer, spec *schema.Spec) error {
-	funcMap := template.FuncMap{
-		"title": sdk.Title,
-	}
-
-	tmpl := template.New("server.tmpl").Funcs(funcMap)
-
-	tmpl, err := tmpl.ParseFS(templates, "templates/server.tmpl")
+func renderTemplate(templateName string, data any) (string, error) {
+	tmplContent, err := templatesFS.ReadFile(templateName)
 	if err != nil {
-		panic(err)
+		return "", err
 	}
 
-	if err := tmpl.Execute(w, spec); err != nil {
-		return err
+	tmpl, err := template.New(templateName).
+		Funcs(funcs).
+		Parse(string(tmplContent))
+	if err != nil {
+		return "", err
 	}
 
-	return nil
+	var buffer bytes.Buffer
+
+	err = tmpl.Execute(&buffer, data)
+	if err != nil {
+		return "", err
+	}
+
+	return buffer.String(), nil
+}
+
+func RenderModelToBuffer(model *Model) (map[string]string, error) {
+	output := make(map[string]string)
+
+	mainSource, err := renderTemplate("templates/main.tmpl", model)
+	if err != nil {
+		return nil, err
+	}
+
+	output["gen.go"] = mainSource
+
+	return output, nil
 }
